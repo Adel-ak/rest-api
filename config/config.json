@@ -1,0 +1,21 @@
+{
+  "development": {
+    "database": "database_development",
+    "dialect": "sqlite",
+    "storage": "development-fsjstd-restapi.db",
+    "logging":false
+  },
+  "test": {
+    "database": "database_test",
+    "dialect": "sqlite",
+    "storage": "test-fsjstd-restapi.db",
+    "logging":false
+
+  },
+  "production": {
+    "database": "database_production",
+    "dialect": "sqlite",
+    "storage": "fsjstd-restapi.db",
+    "logging":false
+  }
+}
