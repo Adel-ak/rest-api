@@ -31,7 +31,7 @@ router.get('/courses/:id',async ( req, res, next ) => {
 
 router.post('/courses', authUser, async ( req, res, next ) => {
     const { title, description, estimatedTime, materialsNeeded } = req.body;
-    const userid = req.currentUser.id
+    const userId = req.currentUser.id
     
     try{
 
@@ -40,6 +40,7 @@ router.post('/courses', authUser, async ( req, res, next ) => {
             description,
             estimatedTime,
             materialsNeeded,
+            userId
         });
 
         res.location(`${req.originalUrl}/${req.currentUser.id}`);
@@ -57,7 +58,7 @@ router.post('/courses', authUser, async ( req, res, next ) => {
 
 router.put('/courses/:id', authUser, async ( req, res, next ) => {
     const { title, description, estimatedTime, materialsNeeded } = req.body;
-    const userid = req.currentUser.id;
+    const userId = req.currentUser.id;
     const err = new Error;
 
     
@@ -81,18 +82,19 @@ router.put('/courses/:id', authUser, async ( req, res, next ) => {
             
             const courseUserId = course.toJSON().User.id;
 
-            if(userid === courseUserId){
+            if(userId === courseUserId){
 
             await Course.update({
                 title,
                 description,
                 estimatedTime,
-                materialsNeeded
+                materialsNeeded,
+                userId
             },
             {
                 where: {
                     id: `${req.params.id}`,
-                    userid:`${userid}`
+                    userId:`${userId}`
                 }
             });
 
