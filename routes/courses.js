@@ -64,7 +64,6 @@ router.put('/courses/:id', authUser, async ( req, res, next ) => {
     
     try{
         const course = await Course.findByPk(req.params.id,options);
-        const courseUserId = course.toJSON().User.id;
         //if object is empty throw error
         if(Object.keys(req.body).length === 0){
 
@@ -72,7 +71,17 @@ router.put('/courses/:id', authUser, async ( req, res, next ) => {
             err.message = 'No empty objects';
             throw err;
             
-        }else if(userid === courseUserId){
+        }else if(course === null){
+
+            err.status = 404;
+            err.message = 'Courses not found / Unable to update';
+            throw err;
+
+        } else {
+            
+            const courseUserId = course.toJSON().User.id;
+
+            if(userid === courseUserId){
 
             await Course.update({
                 title,
@@ -89,14 +98,14 @@ router.put('/courses/:id', authUser, async ( req, res, next ) => {
 
             res.status(204).end();
 
-        } else {
+            } else {
 
             err.status = 403;
             err.message = 'Unable to update other users\'s courses';
             throw err;
 
+            }
         }
-        
     }catch(err){
 
         if(err.name === 'SequelizeValidationError'){
@@ -114,25 +123,36 @@ router.delete('/courses/:id', authUser, async ( req, res, next ) => {
 
         const userid = req.currentUser.id;
         const course = await Course.findByPk(req.params.id,options);
-        const courseUserId = course.toJSON().User.id;
+        console.log(`Output => : course`, course);
         const err = new Error;
 
-        if(userid === courseUserId){
+        if(course === null){
 
-            await Course.destroy({
-                where: {
-                    id: `${req.params.id}`,
-                }
-            });
-        
-            res.status(204).end();
-
-        } else {
-
-            err.status = 403;
-            err.message = 'Unable to delete other users\'s courses';
+            err.status = 404;
+            err.message = 'Courses not found / Unable to delete';
             throw err;
 
+        }else{
+
+            const courseUserId = course.toJSON().User.id;
+
+            if(userid === courseUserId){
+
+                await Course.destroy({
+                    where: {
+                        id: `${req.params.id}`,
+                    }
+                });
+            
+                res.status(204).end();
+    
+            } else {
+    
+                err.status = 403;
+                err.message = 'Unable to delete other users\'s courses';
+                throw err;
+    
+            }
         }
     } catch(err) {
         next(err);
