@@ -19,7 +19,7 @@ const { User } = require('./models');
                 .compareSync(credentials.pass, user.password);
                 
                 if (authenticated) {
-                    console.log(`Authentication successful for username: ${user.username}`);
+                    console.log(`Authentication successful for username: ${user.firstName}`);
 
                     const userDetails = user.toJSON();
                     const { id , firstName, lastName, emailAddress} = userDetails;

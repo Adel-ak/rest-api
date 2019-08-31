@@ -15,10 +15,6 @@ module.exports = (sequelize) => {
       type: Sequelize.STRING,
       allowNull: false,
       validate: {
-        is: {
-          arg:/^[a-z \D]+$/i,
-          msg: 'firstName should contain only letter\'s',
-        },
         notNull: {
           msg: 'A value for firstName is required',
         },
@@ -31,10 +27,6 @@ module.exports = (sequelize) => {
       type: Sequelize.STRING,
       allowNull: false,
       validate: {
-        is: {
-          arg: /^[a-z]+$/i ,
-          msg: 'lastName should contain only letter\'s',
-        },
         notNull: {
           msg: 'A value for lastName is required',
         },

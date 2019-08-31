@@ -8,7 +8,7 @@ router.get('/users', authUser, (req, res) => {
     res.status(200).json(user);
 });
 
-router.post('/users', async (req,res) => {
+router.post('/users', async (req,res, next) => {
 
   const { firstName, lastName, emailAddress, password } = req.body;
 

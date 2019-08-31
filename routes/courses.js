@@ -1,6 +1,6 @@
 const express = require('express');
 const authUser = require('../auth')
-const { User, Course } = require('../models');
+const { User, Course, sequelize } = require('../models');
 const router = express.Router();
 
 const options = {
@@ -10,7 +10,7 @@ const options = {
     }],
     attributes: { exclude: ['createdAt','updatedAt'] }
 };
-
+//Build a Basic Bookcase
 router.get('/courses',async ( req, res ) => {
     const allCourses = await Course.findAll(options);
     res.status(200).json(allCourses);
@@ -40,7 +40,6 @@ router.post('/courses', authUser, async ( req, res, next ) => {
             description,
             estimatedTime,
             materialsNeeded,
-            userid
         });
 
         res.location(`${req.originalUrl}/${req.currentUser.id}`);
@@ -58,46 +57,87 @@ router.post('/courses', authUser, async ( req, res, next ) => {
 
 router.put('/courses/:id', authUser, async ( req, res, next ) => {
     const { title, description, estimatedTime, materialsNeeded } = req.body;
-    console.log(req.body);
+    const userid = req.currentUser.id;
+    const err = new Error;
+
     
-    const userid = req.currentUser.id
+    
     try{
-        
-        await Course.update({
-            title,
-            description,
-            estimatedTime,
-            materialsNeeded,
-            userid
-        },
-        {
-        where: {
-            id: `${req.params.id}`
+        const course = await Course.findByPk(req.params.id,options);
+        const courseUserId = course.toJSON().User.id;
+        //if object is empty throw error
+        if(Object.keys(req.body).length === 0){
+
+            err.status = 400;
+            err.message = 'No empty objects';
+            throw err;
+            
+        }else if(userid === courseUserId){
+
+            await Course.update({
+                title,
+                description,
+                estimatedTime,
+                materialsNeeded
+            },
+            {
+                where: {
+                    id: `${req.params.id}`,
+                    userid:`${userid}`
+                }
+            });
+
+            res.status(204).end();
+
+        } else {
+
+            err.status = 403;
+            err.message = 'Unable to update other users\'s courses';
+            throw err;
+
         }
-        });
-
-        res.status(204).end();
-
-    }catch(err){
-    console.log(`Output => : err`, err);
-
-        err.message = err.errors.map(val => val.message);
-        err.status = 400;
         
+    }catch(err){
+
+        if(err.name === 'SequelizeValidationError'){
+            err.message = err.errors.map(val => val.message);
+            err.status = 400;
+        }
+
         next(err);
     }
 });
 
-router.delete('/courses/:id', authUser, async ( req, res ) => {
-    
-    await Course.destroy({
-        where: {
-            id: `${req.params.id}`,
-            userid:`${req.currentUser.id}`
-        }
-    });
+router.delete('/courses/:id', authUser, async ( req, res, next ) => {
 
-    res.status(204).end();
+    try{
+
+        const userid = req.currentUser.id;
+        const course = await Course.findByPk(req.params.id,options);
+        const courseUserId = course.toJSON().User.id;
+        const err = new Error;
+
+        if(userid === courseUserId){
+
+            await Course.destroy({
+                where: {
+                    id: `${req.params.id}`,
+                }
+            });
+        
+            res.status(204).end();
+
+        } else {
+
+            err.status = 403;
+            err.message = 'Unable to delete other users\'s courses';
+            throw err;
+
+        }
+    } catch(err) {
+        next(err);
+    }
+    
 });
 
 module.exports = router;
