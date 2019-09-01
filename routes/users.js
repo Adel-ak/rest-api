@@ -20,7 +20,10 @@ router.post('/users', async (req,res, next) => {
       password
     });
 
-    res.status(201).end();
+    res.location(`/`);
+    res.status(201);
+    res.end();
+
   }catch(err){
 
     err.message = err.errors.map(val => val.message);
