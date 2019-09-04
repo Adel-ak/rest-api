@@ -35,23 +35,27 @@ router.post('/courses', authUser, async ( req, res, next ) => {
     
     try{
 
-        await Course.create({
+        const data = await Course.create({
             title,
             description,
             estimatedTime,
             materialsNeeded,
             userId
         });
+        
+        const { id } = data.toJSON();
 
-        res.location(`${req.originalUrl}/${req.currentUser.id}`);
+        res.location(`${req.originalUrl}/${id}`);
         res.status(201);
         res.end();
 
     }catch(err){
-            
-        err.message = err.errors.map(val => val.message);
-        err.status = 400;
-        
+
+        if(err.name === 'SequelizeValidationError'){
+            err.message = err.errors.map(val => val.message);
+            err.status = 400;
+        }
+
         next(err);
     }
 });
